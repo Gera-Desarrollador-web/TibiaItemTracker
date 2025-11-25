@@ -295,6 +295,10 @@ export default function App() {
           semana. Los items "lo tiene" se borran después de 1 mes.
           Los datos se actualizan automáticamente cada 20 minutos.
         </p>
+        <p className="font-bold text-center text-gray-700 mb-6">
+          Creado por "Taros Stone"
+        </p>
+
 
         {/* FORM AGREGAR */}
         <div className="mb-8">
