@@ -15,6 +15,12 @@ function toTitleCase(text) {
   return text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// 🔹 Normaliza texto: elimina espacios al inicio/final, reduce múltiples espacios
+function normalizeText(text) {
+  if (!text) return "";
+  return text.trim().replace(/\s+/g, " ");
+}
+
 const LOCAL_KEY = "tibiaCharsData";
 const LOCAL_LAST_SYNC = "tibiaCharsLastSync";
 const SYNC_INTERVAL_MS = 20 * 60 * 1000; // 20 minutos
@@ -172,8 +178,8 @@ export default function App() {
     if (!char || !item) return alert("Faltan datos");
 
     const payload = {
-      char: toTitleCase(char),
-      item: toTitleCase(item),
+      char: toTitleCase(normalizeText(char)),
+      item: toTitleCase(normalizeText(item)),
       status,
       createdAt: Date.now(),
     };
@@ -205,8 +211,8 @@ export default function App() {
     if (!char || !item || !status)
       return alert("Debes llenar char, item y status para borrar");
 
-    const normalizedChar = toTitleCase(char);
-    const normalizedItem = toTitleCase(item);
+    const normalizedChar = toTitleCase(normalizeText(char));
+    const normalizedItem = toTitleCase(normalizeText(item));
 
     try {
       const q = query(
@@ -259,7 +265,7 @@ export default function App() {
   const searchByItem = async () => {
     if (!searchItem) return;
 
-    const normalized = toTitleCase(searchItem);
+    const normalized = toTitleCase(normalizeText(searchItem));
     const results = data.filter((x) => x.item === normalized);
     setSearchResults(processLocalArray(results));
   };
@@ -268,7 +274,7 @@ export default function App() {
   const searchByChar = async () => {
     if (!searchChar) return;
 
-    const normalized = toTitleCase(searchChar);
+    const normalized = toTitleCase(normalizeText(searchChar));
     const results = data.filter((x) => x.char === normalized);
     setSearchResults(processLocalArray(results));
   };
