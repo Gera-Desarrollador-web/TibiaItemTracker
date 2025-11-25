@@ -9,6 +9,13 @@ import {
   where,
 } from "firebase/firestore";
 
+// 🔤 Convertir siempre a Title Case (cada palabra inicia con mayúscula)
+function toTitleCase(text) {
+  return text
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export default function App() {
   const [char, setChar] = useState("");
   const [item, setItem] = useState("");
@@ -25,8 +32,8 @@ export default function App() {
     if (!char || !item) return alert("Faltan datos");
 
     await addDoc(charsRef, {
-      char,
-      item,
+      char: toTitleCase(char),
+      item: toTitleCase(item),
       status,
       createdAt: Date.now(),
     });
@@ -44,8 +51,8 @@ export default function App() {
 
     const q = query(
       charsRef,
-      where("char", "==", char),
-      where("item", "==", item),
+      where("char", "==", toTitleCase(char)),
+      where("item", "==", toTitleCase(item)),
       where("status", "==", status)
     );
 
@@ -68,7 +75,8 @@ export default function App() {
   const searchByItem = async () => {
     if (!searchItem) return;
 
-    const q = query(charsRef, where("item", "==", searchItem));
+    const normalized = toTitleCase(searchItem);
+    const q = query(charsRef, where("item", "==", normalized));
     const results = await getDocs(q);
 
     const now = Date.now();
@@ -79,7 +87,6 @@ export default function App() {
     for (const docSnap of results.docs) {
       const data = docSnap.data();
 
-      // borrar solo si NO tiene "lo tiene"
       if (data.status !== "lo tiene" && now - data.createdAt > oneWeek) {
         await deleteDoc(docSnap.ref);
         continue;
@@ -95,7 +102,8 @@ export default function App() {
   const searchByChar = async () => {
     if (!searchChar) return;
 
-    const q = query(charsRef, where("char", "==", searchChar));
+    const normalized = toTitleCase(searchChar);
+    const q = query(charsRef, where("char", "==", normalized));
     const results = await getDocs(q);
 
     const now = Date.now();
@@ -106,7 +114,6 @@ export default function App() {
     for (const docSnap of results.docs) {
       const data = docSnap.data();
 
-      // borrar solo si NO tiene "lo tiene"
       if (data.status !== "lo tiene" && now - data.createdAt > oneWeek) {
         await deleteDoc(docSnap.ref);
         continue;
@@ -223,9 +230,9 @@ export default function App() {
               className="p-3 bg-gray-50 border rounded-md mb-2 shadow-sm"
             >
               <p className="text-gray-800">
-                <span className="font-bold text-indigo-600">{r.char}</span> —{" "}
-                <span className="text-gray-800 font-medium">{r.item}</span> —{" "}
-                <span className="text-gray-600">{r.status}</span>
+                <span className="font-bold text-indigo-600">{r.char}</span>{" "}
+                — <span className="text-gray-800 font-medium">{r.item}</span>{" "}
+                — <span className="text-gray-600">{r.status}</span>
               </p>
             </div>
           ))}
