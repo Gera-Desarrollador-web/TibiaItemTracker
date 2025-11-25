@@ -98,7 +98,7 @@ export default function App() {
     setSearchResults(validResults);
   };
 
-  // ➤ Buscar por char + borrar viejos
+  // ➤ Buscar por char + borrar viejos (ORDENADO + VERDE)
   const searchByChar = async () => {
     if (!searchChar) return;
 
@@ -109,7 +109,7 @@ export default function App() {
     const now = Date.now();
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
 
-    const validResults = [];
+    let validResults = [];
 
     for (const docSnap of results.docs) {
       const data = docSnap.data();
@@ -121,6 +121,13 @@ export default function App() {
 
       validResults.push({ id: docSnap.id, ...data });
     }
+
+    // ➤ Ordenar: primero los que lo tienen (lo tiene), luego los que necesitan
+    validResults.sort((a, b) => {
+      if (a.status === "lo tiene" && b.status !== "lo tiene") return -1;
+      if (a.status !== "lo tiene" && b.status === "lo tiene") return 1;
+      return a.item.localeCompare(b.item);
+    });
 
     setSearchResults(validResults);
   };
@@ -232,7 +239,16 @@ export default function App() {
               <p className="text-gray-800">
                 <span className="font-bold text-indigo-600">{r.char}</span>{" "}
                 — <span className="text-gray-800 font-medium">{r.item}</span>{" "}
-                — <span className="text-gray-600">{r.status}</span>
+                —{" "}
+                <span
+                  className={
+                    r.status === "lo tiene"
+                      ? "text-green-600 font-bold"
+                      : "text-gray-600"
+                  }
+                >
+                  {r.status}
+                </span>
               </p>
             </div>
           ))}
