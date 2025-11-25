@@ -67,14 +67,23 @@ export default function App() {
   // 🔄 Función común de limpieza + ordenamiento
   const cleanAndSort = async (docs) => {
     const now = Date.now();
+
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
+    const oneMonth = 30 * 24 * 60 * 60 * 1000;
+
     let arr = [];
 
     for (const docSnap of docs) {
       const data = docSnap.data();
 
-      // borrar los viejos que no son "lo tiene"
-      if (data.status !== "lo tiene" && now - data.createdAt > oneWeek) {
+      // ❌ borrar si es "necesita" y tiene más de 1 semana
+      if (data.status === "necesita" && now - data.createdAt > oneWeek) {
+        await deleteDoc(docSnap.ref);
+        continue;
+      }
+
+      // ❌ borrar si es "lo tiene" y tiene más de 1 mes
+      if (data.status === "lo tiene" && now - data.createdAt > oneMonth) {
         await deleteDoc(docSnap.ref);
         continue;
       }
@@ -242,7 +251,7 @@ export default function App() {
         </button>
 
         {/* RESULTADOS */}
-        <div className="mt-6 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+        <div className="mt-6 max-h-80 overflow-y-auto pr-2">
           <h3 className="font-semibold text-gray-700 mb-2">Resultados:</h3>
 
           {searchResults.length === 0 && (
