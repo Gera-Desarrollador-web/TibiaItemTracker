@@ -23,7 +23,6 @@ export default function App() {
   const [searchChar, setSearchChar] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
-  // nuevo → filtro local
   const [statusFilter, setStatusFilter] = useState("todos");
 
   const charsRef = collection(db, "chars");
@@ -65,6 +64,46 @@ export default function App() {
     setItem("");
   };
 
+  // 🔄 Función común de limpieza + ordenamiento
+  const cleanAndSort = async (docs) => {
+    const now = Date.now();
+    const oneWeek = 7 * 24 * 60 * 60 * 1000;
+    let arr = [];
+
+    for (const docSnap of docs) {
+      const data = docSnap.data();
+
+      // borrar los viejos que no son "lo tiene"
+      if (data.status !== "lo tiene" && now - data.createdAt > oneWeek) {
+        await deleteDoc(docSnap.ref);
+        continue;
+      }
+
+      arr.push({ id: docSnap.id, ...data });
+    }
+
+    // aplicar filtro
+    if (statusFilter !== "todos") {
+      arr = arr.filter((x) => x.status === statusFilter);
+    }
+
+    // orden final:
+    // 1) por char A-Z
+    // 2) necesita → lo tiene
+    // 3) item A-Z
+    arr.sort((a, b) => {
+      const byChar = a.char.localeCompare(b.char);
+      if (byChar !== 0) return byChar;
+
+      if (a.status === "necesita" && b.status !== "necesita") return -1;
+      if (a.status !== "necesita" && b.status === "necesita") return 1;
+
+      return a.item.localeCompare(b.item);
+    });
+
+    return arr;
+  };
+
   // ➤ Buscar por item
   const searchByItem = async () => {
     if (!searchItem) return;
@@ -73,26 +112,10 @@ export default function App() {
     const q = query(charsRef, where("item", "==", normalized));
     const results = await getDocs(q);
 
-    const now = Date.now();
-    const oneWeek = 7 * 24 * 60 * 60 * 1000;
-
-    const validResults = [];
-
-    for (const docSnap of results.docs) {
-      const data = docSnap.data();
-
-      if (data.status !== "lo tiene" && now - data.createdAt > oneWeek) {
-        await deleteDoc(docSnap.ref);
-        continue;
-      }
-
-      validResults.push({ id: docSnap.id, ...data });
-    }
-
-    setSearchResults(validResults);
+    setSearchResults(await cleanAndSort(results.docs));
   };
 
-  // ➤ Buscar por char (ORDENADO + VERDE + FILTRO)
+  // ➤ Buscar por char
   const searchByChar = async () => {
     if (!searchChar) return;
 
@@ -100,35 +123,13 @@ export default function App() {
     const q = query(charsRef, where("char", "==", normalized));
     const results = await getDocs(q);
 
-    const now = Date.now();
-    const oneWeek = 7 * 24 * 60 * 60 * 1000;
+    setSearchResults(await cleanAndSort(results.docs));
+  };
 
-    let validResults = [];
-
-    for (const docSnap of results.docs) {
-      const data = docSnap.data();
-
-      if (data.status !== "lo tiene" && now - data.createdAt > oneWeek) {
-        await deleteDoc(docSnap.ref);
-        continue;
-      }
-
-      validResults.push({ id: docSnap.id, ...data });
-    }
-
-    // ➤ aplicar filtro local
-    if (statusFilter !== "todos") {
-      validResults = validResults.filter((r) => r.status === statusFilter);
-    }
-
-    // ➤ Ordenar: los que "lo tiene" primero
-    validResults.sort((a, b) => {
-      if (a.status === "lo tiene" && b.status !== "lo tiene") return -1;
-      if (a.status !== "lo tiene" && b.status === "lo tiene") return 1;
-      return a.item.localeCompare(b.item);
-    });
-
-    setSearchResults(validResults);
+  // ➤ Mostrar todos
+  const getAllData = async () => {
+    const snapshot = await getDocs(charsRef);
+    setSearchResults(await cleanAndSort(snapshot.docs));
   };
 
   return (
@@ -214,7 +215,6 @@ export default function App() {
             className="w-full mb-3 px-3 py-2 rounded-md border focus:ring-2 focus:ring-indigo-500"
           />
 
-          {/* 🔽 FILTRO NUEVO */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -233,8 +233,16 @@ export default function App() {
           </button>
         </div>
 
+        {/* VER TODOS */}
+        <button
+          onClick={getAllData}
+          className="w-full bg-purple-600 text-white py-2 rounded-md shadow-md hover:bg-purple-700 transition mt-6"
+        >
+          Ver todos los registros
+        </button>
+
         {/* RESULTADOS */}
-        <div className="mt-6">
+        <div className="mt-6 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
           <h3 className="font-semibold text-gray-700 mb-2">Resultados:</h3>
 
           {searchResults.length === 0 && (
