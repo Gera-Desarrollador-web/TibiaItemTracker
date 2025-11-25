@@ -147,7 +147,10 @@ export default function App() {
         <h1 className="text-2xl font-bold text-center mb-6 text-indigo-600">
           Items Tibia Tracker
         </h1>
-
+      <p className="text-sm text-gray-600 mb-6">
+        Nota: Los items "necesita" se borran automáticamente después de 1 semana. Los items "lo tiene" se borran después de 1 mes.
+        Creado por "Taros Stone"
+      </p>
         {/* FORM AGREGAR */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-3">Agregar / Borrar item</h2>
