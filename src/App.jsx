@@ -17,7 +17,7 @@ function toTitleCase(text) {
 
 const LOCAL_KEY = "tibiaCharsData";
 const LOCAL_LAST_SYNC = "tibiaCharsLastSync";
-const SYNC_INTERVAL_MS = 60 * 60 * 1000; // 1 hora
+const SYNC_INTERVAL_MS = 20 * 60 * 1000; // 20 minutos
 
 export default function App() {
   const [char, setChar] = useState("");
