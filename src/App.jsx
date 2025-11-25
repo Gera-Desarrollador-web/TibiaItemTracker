@@ -9,11 +9,9 @@ import {
   where,
 } from "firebase/firestore";
 
-// 🔤 Convertir siempre a Title Case (cada palabra inicia con mayúscula)
+// 🔤 Convertir siempre a Title Case
 function toTitleCase(text) {
-  return text
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export default function App() {
@@ -24,6 +22,9 @@ export default function App() {
   const [searchItem, setSearchItem] = useState("");
   const [searchChar, setSearchChar] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+
+  // nuevo → filtro local
+  const [statusFilter, setStatusFilter] = useState("todos");
 
   const charsRef = collection(db, "chars");
 
@@ -39,12 +40,11 @@ export default function App() {
     });
 
     alert("Guardado correctamente");
-
     setItem("");
     setStatus("lo tiene");
   };
 
-  // ➤ Borrar un registro específico
+  // ➤ Borrar
   const deleteData = async () => {
     if (!char || !item || !status)
       return alert("Debes llenar char, item y status para borrar");
@@ -57,21 +57,15 @@ export default function App() {
     );
 
     const docs = await getDocs(q);
+    if (docs.empty) return alert("No se encontró ese registro");
 
-    if (docs.empty) {
-      alert("No se encontró ese registro");
-      return;
-    }
-
-    for (const d of docs.docs) {
-      await deleteDoc(d.ref);
-    }
+    for (const d of docs.docs) await deleteDoc(d.ref);
 
     alert("Registro(s) eliminado(s)");
     setItem("");
   };
 
-  // ➤ Buscar por item + borrar viejos
+  // ➤ Buscar por item
   const searchByItem = async () => {
     if (!searchItem) return;
 
@@ -98,7 +92,7 @@ export default function App() {
     setSearchResults(validResults);
   };
 
-  // ➤ Buscar por char + borrar viejos (ORDENADO + VERDE)
+  // ➤ Buscar por char (ORDENADO + VERDE + FILTRO)
   const searchByChar = async () => {
     if (!searchChar) return;
 
@@ -122,7 +116,12 @@ export default function App() {
       validResults.push({ id: docSnap.id, ...data });
     }
 
-    // ➤ Ordenar: primero los que lo tienen (lo tiene), luego los que necesitan
+    // ➤ aplicar filtro local
+    if (statusFilter !== "todos") {
+      validResults = validResults.filter((r) => r.status === statusFilter);
+    }
+
+    // ➤ Ordenar: los que "lo tiene" primero
     validResults.sort((a, b) => {
       if (a.status === "lo tiene" && b.status !== "lo tiene") return -1;
       if (a.status !== "lo tiene" && b.status === "lo tiene") return 1;
@@ -147,20 +146,20 @@ export default function App() {
             placeholder="Nombre del char"
             value={char}
             onChange={(e) => setChar(e.target.value)}
-            className="w-full mb-3 px-3 py-2 rounded-md border shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full mb-3 px-3 py-2 rounded-md border shadow-sm focus:ring-2 focus:ring-indigo-500"
           />
 
           <input
             placeholder="Nombre del item"
             value={item}
             onChange={(e) => setItem(e.target.value)}
-            className="w-full mb-3 px-3 py-2 rounded-md border shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full mb-3 px-3 py-2 rounded-md border shadow-sm focus:ring-2 focus:ring-indigo-500"
           />
 
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-full mb-3 px-3 py-2 rounded-md border shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full mb-3 px-3 py-2 rounded-md border shadow-sm focus:ring-2 focus:ring-indigo-500"
           >
             <option value="necesita">Necesita</option>
             <option value="lo tiene">Lo tiene</option>
@@ -193,7 +192,7 @@ export default function App() {
             placeholder="Item a buscar"
             value={searchItem}
             onChange={(e) => setSearchItem(e.target.value)}
-            className="w-full mb-3 px-3 py-2 rounded-md border shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full mb-3 px-3 py-2 rounded-md border focus:ring-2 focus:ring-indigo-500"
           />
 
           <button
@@ -212,8 +211,19 @@ export default function App() {
             placeholder="Nombre del char"
             value={searchChar}
             onChange={(e) => setSearchChar(e.target.value)}
-            className="w-full mb-3 px-3 py-2 rounded-md border shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full mb-3 px-3 py-2 rounded-md border focus:ring-2 focus:ring-indigo-500"
           />
+
+          {/* 🔽 FILTRO NUEVO */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full mb-3 px-3 py-2 rounded-md border shadow-sm focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="todos">Mostrar todos</option>
+            <option value="lo tiene">Lo tiene</option>
+            <option value="necesita">Necesita</option>
+          </select>
 
           <button
             onClick={searchByChar}
@@ -244,7 +254,7 @@ export default function App() {
                   className={
                     r.status === "lo tiene"
                       ? "text-green-600 font-bold"
-                      : "text-gray-600"
+                      : "text-red-600 font-bold"
                   }
                 >
                   {r.status}
