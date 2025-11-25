@@ -292,9 +292,8 @@ export default function App() {
         </h1>
         <p className="text-sm text-gray-600 mb-6">
           Nota: Los items "necesita" se borran automáticamente después de 1
-          semana. Los items "lo tiene" se borran después de 1 mes. La app usa
-          copia local para ahorrar lecturas a Firebase; se sincroniza con
-          Firebase cada 1 hora.
+          semana. Los items "lo tiene" se borran después de 1 mes.
+          Los datos se actualizan automáticamente cada 20 minutos.
         </p>
 
         {/* FORM AGREGAR */}
