@@ -79,8 +79,8 @@ export default function App() {
     for (const docSnap of results.docs) {
       const data = docSnap.data();
 
-      // borrar datos viejos
-      if (now - data.createdAt > oneWeek) {
+      // borrar solo si NO tiene "lo tiene"
+      if (data.status !== "lo tiene" && now - data.createdAt > oneWeek) {
         await deleteDoc(docSnap.ref);
         continue;
       }
@@ -106,8 +106,8 @@ export default function App() {
     for (const docSnap of results.docs) {
       const data = docSnap.data();
 
-      // borrar datos viejos
-      if (now - data.createdAt > oneWeek) {
+      // borrar solo si NO tiene "lo tiene"
+      if (data.status !== "lo tiene" && now - data.createdAt > oneWeek) {
         await deleteDoc(docSnap.ref);
         continue;
       }
