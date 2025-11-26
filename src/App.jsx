@@ -71,7 +71,7 @@ export default function App() {
     const now = Date.now();
 
     const oneWeek = 7 * 24 * 60 * 60 * 1000;
-    const oneMonth = 30 * 24 * 60 * 60 * 1000;
+    const twoMonths = 60 * 24 * 60 * 60 * 1000;
 
     let arr = [];
 
@@ -88,7 +88,7 @@ export default function App() {
         continue;
       }
 
-      if (data.status === "lo tiene" && now - data.createdAt > oneMonth) {
+      if (data.status === "lo tiene" && now - data.createdAt > twoMonths) {
         try {
           await deleteDoc(docSnap.ref);
         } catch (e) {
@@ -119,10 +119,10 @@ export default function App() {
         .filter((dataObj) => {
           const now = Date.now();
           const oneWeek = 7 * 24 * 60 * 60 * 1000;
-          const oneMonth = 30 * 24 * 60 * 60 * 1000;
+          const twoMonths = 60 * 24 * 60 * 60 * 1000;
           if (dataObj.status === "necesita" && now - dataObj.createdAt > oneWeek)
             return false;
-          if (dataObj.status === "lo tiene" && now - dataObj.createdAt > oneMonth)
+          if (dataObj.status === "lo tiene" && now - dataObj.createdAt > twoMonths)
             return false;
           return true;
         });
@@ -298,7 +298,7 @@ export default function App() {
         </h1>
         <p className="text-sm text-gray-600 mb-6">
           Nota: Los items "necesita" se borran automáticamente después de 1
-          semana. Los items "lo tiene" se borran después de 1 mes.
+          semana. Los items "lo tiene" se borran después de 2 mes.
           Los datos se actualizan automáticamente cada 20 minutos.
         </p>
         <p className="font-bold text-center text-gray-700 mb-6">
