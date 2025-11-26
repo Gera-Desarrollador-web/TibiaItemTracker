@@ -302,7 +302,7 @@ export default function App() {
           Los datos se actualizan automáticamente cada 20 minutos.
         </p>
         <p className="font-bold text-center text-gray-700 mb-6">
-          Solo para "Talera"
+          ¡Recuerda usar nombres correctos y sin errores de ortografía!
         </p>
 
 
