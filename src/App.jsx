@@ -298,7 +298,7 @@ export default function App() {
         </h1>
         <p className="text-sm text-gray-600 mb-6">
           Nota: Los items "necesita" se borran automáticamente después de 1
-          semana. Los items "lo tiene" se borran después de 2 mes.
+          semana. Los items "lo tiene" se borran después de 2 meses.
           Los datos se actualizan automáticamente cada 20 minutos.
         </p>
         <p className="font-bold text-center text-gray-700 mb-6">
